@@ -39,8 +39,7 @@ long long int start;
 float getSeconds() {
   long long int now = std::chrono::system_clock::now().time_since_epoch().count();
   long nanoSec = (now - start)/1000;
-  float sec = nanoSec/10000.0f;
-  LOGD("Seconds: %.03f\n", sec);
+  float sec = nanoSec/1000.0f;
   return sec;
 }
 
@@ -104,8 +103,8 @@ int main() {
   if (!glfwInit())
     return -1;
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
