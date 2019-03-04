@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(OpenGLFoo)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 add_definitions(-DDEBUG
         -D__STDC_FORMAT_MACROS

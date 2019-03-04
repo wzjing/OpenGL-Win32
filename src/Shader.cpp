@@ -121,6 +121,7 @@ void Shader::use() {
 
 void Shader::unUse() {
     glDeleteProgram(program);
+    LOGD("Deleting shader: %d\n", program);
     checkGlError("delete program");
 }
 

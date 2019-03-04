@@ -1,4 +1,4 @@
-#version 300 es
+#version 330
 
 precision highp float;
 
@@ -9,7 +9,7 @@ uniform vec2 iResolution;
 
 void main()
 {
-    float speed = iGlobalTime*2.0;
+    float speed = iGlobalTime*1.0;
     vec2 uv = (gl_FragCoord.xy / iResolution.xy-0.5)*8.0;
     vec2 uv0=uv;
     float i0=1.0;
