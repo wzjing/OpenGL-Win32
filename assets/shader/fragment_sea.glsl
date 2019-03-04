@@ -1,9 +1,12 @@
 #version 330
-precision lowp float;
+
+precision highp float;
+
+out vec4 fragmentColor;
+
 uniform float iGlobalTime;
 uniform vec2 iResolution;
 
-out vec4 fragColor;
 
 const int NUM_STEPS = 8;
 const float PI	 	= 3.141592;
@@ -181,5 +184,5 @@ void main() {
     	pow(smoothstep(0.0,-0.05,dir.y),0.3));
         
     // post
-	fragColor = vec4(pow(color,vec3(0.75)), 1.0);
+	fragmentColor = vec4(pow(color,vec3(0.75)), 1.0);
 }

@@ -34,13 +34,14 @@ GLuint vaoId;
 
 Shader *shader;
 
-float start;
+long long int start;
 
-float getTimeStamp() {
-  long long int nanoSec = std::chrono::system_clock::now().time_since_epoch().count();
-  int timeStamp = nanoSec / 1000;
-  LOGD("TIMESTAMP: %d\n", timeStamp);
-  return timeStamp;
+float getSeconds() {
+  long long int now = std::chrono::system_clock::now().time_since_epoch().count();
+  long nanoSec = (now - start)/1000;
+  float sec = nanoSec/10000.0f;
+  LOGD("Seconds: %.03f\n", sec);
+  return sec;
 }
 
 void glInit() {
@@ -48,7 +49,7 @@ void glInit() {
          "Shader Version: %s\n",
          glGetString(GL_VERSION),
          glGetString(GL_SHADING_LANGUAGE_VERSION));
-  start = getTimeStamp();
+  start = std::chrono::system_clock::now().time_since_epoch().count();
   glViewport(0, 0, width, height);
   shader = new Shader(load_text("/shader/vertex_shader.glsl"), load_text("/shader/fragment_sea.glsl"));
 
@@ -81,8 +82,7 @@ void glStep() {
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
   shader->use();
-  shader->setUniform("iGlobalTime", getTimeStamp());
-  LOGD("iGlobalTime: %f\n", getTimeStamp());
+  shader->setUniform("iGlobalTime", getSeconds());
   shader->setUniform("iResolution", 2, resolution);
 
   glBindVertexArray(vaoId);
@@ -104,8 +104,8 @@ int main() {
   if (!glfwInit())
     return -1;
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 

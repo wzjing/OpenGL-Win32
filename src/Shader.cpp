@@ -14,7 +14,7 @@ Shader::Shader(std::string vertexShader, std::string fragmentShader, std::string
         vertexShaderSrc(std::move(vertexShader)),
         fragmentShaderSrc(std::move(fragmentShader)),
         geometryShaderSrc(std::move(geometryShader)),
-        program(createProgram()){
+        program(createProgram()) {
 }
 
 Shader::~Shader() {
@@ -47,8 +47,22 @@ GLuint Shader::compileShader(GLenum type, const char *pSource) {
             if (infoLen) {
                 char *buffer = new char[infoLen];
                 glGetShaderInfoLog(shader, infoLen, nullptr, buffer);
-                LOG("Could not compile shader %s: \n%s\n",
-                    type == GL_VERTEX_SHADER ? "Vertex Shader" : "Fragment Shader", buffer);
+                const char *name;
+                switch (type) {
+                    case GL_VERTEX_SHADER:
+                        name = "vertex";
+                        break;
+                    case GL_FRAGMENT_SHADER:
+                        name = "fragment";
+                        break;
+                    case GL_GEOMETRY_SHADER:
+                        name = "geometry";
+                        break;
+                    default:
+                        name = "unknown";
+                        break;
+                }
+                LOG("Could not compile %s shader: \n%s\n", name, buffer);
                 delete[] buffer;
                 glDeleteShader(shader);
                 shader = 0;
@@ -211,7 +225,7 @@ void Shader::setUniform(const char *name, GLsizei row, GLsizei column, float *ar
 }
 
 void Shader::setAttribute(const char *name, GLsizei size, GLsizei stride) {
-    auto location = (GLuint)glGetAttribLocation(program, name);
+    auto location = (GLuint) glGetAttribLocation(program, name);
     glEnableVertexAttribArray(location);
     glVertexAttribPointer(location, size, GL_FLOAT, GL_FALSE, stride, nullptr);
     checkGlError("Enable vertex attributes");
