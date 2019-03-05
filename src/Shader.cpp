@@ -8,8 +8,6 @@
 #include "Shader.h"
 #include "utils/gl-utils.h"
 
-#define UNIFORM_FLOAT(count, location, size, arr) glUniform##count##fv(location, size, arr)
-
 Shader::Shader(std::string vertexShader, std::string fragmentShader, std::string geometryShader) :
         vertexShaderSrc(std::move(vertexShader)),
         fragmentShaderSrc(std::move(fragmentShader)),
@@ -120,7 +118,7 @@ GLuint Shader::createProgram() {
             checkGlError("Link fail");
         }
     }
-    LOGD("Compiled Shader: %u\n", program);
+//    LOGD("Compiled Shader: %u\n", program);
     return program;
 }
 

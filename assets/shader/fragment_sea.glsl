@@ -2,6 +2,7 @@
 
 precision highp float;
 
+in vec2 UV;
 out vec4 fragmentColor;
 
 uniform float iGlobalTime;
@@ -159,7 +160,8 @@ float heightMapTracing(vec3 ori, vec3 dir, out vec3 p) {
 
 // main
 void main() {
-	vec2 uv = gl_FragCoord.xy/iResolution.xy;
+//	vec2 uv = gl_FragCoord.xy/iResolution.xy;
+	vec2 uv = UV;
     uv = uv * 2.0 - 1.0;
     uv.x *= iResolution.x / iResolution.y;    
     float time = iGlobalTime * 0.3;

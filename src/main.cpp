@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/ext.hpp>
 #include <string>
 #include <chrono>
 #include <stdexcept>
@@ -12,10 +13,11 @@
 #include "Shader.h"
 #include "utils/gl-utils.h"
 
-const int width = 640;
-const int height = 480;
+const int defaultWidth = 640;
+const int defaultHeight = 480;
 
-float resolution[] = {float(width), float(height)};
+int currentWidth = 0;
+int currentHeight = 0;
 
 float vertices[] = {
         -1, -1,
@@ -34,23 +36,31 @@ GLuint vaoId;
 
 Shader *shader;
 
-long long int start;
+std::chrono::time_point<std::chrono::steady_clock> start;
 
 float getSeconds() {
-  long long int now = std::chrono::system_clock::now().time_since_epoch().count();
-  long nanoSec = (now - start)/1000;
-  float sec = nanoSec/1000.0f;
+  auto now = std::chrono::high_resolution_clock::now();
+  long nanoSec = (now - start).count() / 1000000;
+  float sec = nanoSec / 1000.0f;
   return sec;
 }
 
+void glInit();
+void glResize(int width, int height);
+void glStep();
+
 void glInit() {
-  printf("OpenGL Version: %s\n"
+  printf("Render: %s\n"
+         "OpenGL Version: %s\n"
          "Shader Version: %s\n",
+         glGetString(GL_RENDER),
          glGetString(GL_VERSION),
          glGetString(GL_SHADING_LANGUAGE_VERSION));
-  start = std::chrono::system_clock::now().time_since_epoch().count();
-  glViewport(0, 0, width, height);
+  start = std::chrono::high_resolution_clock::now();
   shader = new Shader(load_text("/shader/vertex_shader.glsl"), load_text("/shader/fragment_sea.glsl"));
+
+  glResize(defaultWidth, defaultHeight);
+  glEnable(GL_MULTISAMPLE);
 
 
   // VBO: Vertex Buffer Object
@@ -76,13 +86,38 @@ void glInit() {
 
 }
 
+void glResize(int width, int height) {
+  LOGD("glResize()\n");
+  glViewport(0, 0, width, height);
+  currentWidth = width;
+  currentHeight = height;
+}
+
 void glStep() {
+  LOGD("glStep()\n");
   glClear(GL_COLOR_BUFFER_BIT);
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
+
+  // Shader: projectionMatrix;
+  glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)currentWidth / currentHeight, 0.1f,
+                                          100.0f);
+  glm::mat4 View = glm::lookAt(
+          glm::vec3(4, 3, 3),
+          glm::vec3(0, 0, 0),
+          glm::vec3(0, 1, 0)
+  );
+  glm::mat4 Model = glm::mat4(1.0f);
+
+//  float degree = 360 * sin((float) clock() / (10 * CLOCKS_PER_SEC));
+//  glm::mat4 rotatedView = glm::rotate(View, degree, glm::vec3(0, 1, 0));
+
+  glm::mat4 mvp = Projection * View * Model;
+
   shader->use();
   shader->setUniform("iGlobalTime", getSeconds());
-  shader->setUniform("iResolution", 2, resolution);
+  shader->setUniform("iResolution", 2, std::array<float, 2>{(float) currentWidth, (float) currentHeight}.data());
+  shader->setUniform("mvp", 4, 4, &mvp[0][0]);
 
   glBindVertexArray(vaoId);
   glBindBuffer(GL_ARRAY_BUFFER, vboId);
@@ -96,24 +131,48 @@ void glStep() {
 //  shader->unUse();
 }
 
+static void error_callback(int error, const char* description)
+{
+  fprintf(stderr, "Error: (%d)%s\n", error, description);
+}
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
+  else{
+    LOGD("Key: %d\n", key);
+  }
+}
+static void size_callback(GLFWwindow* window, int width, int height) {
+  LOGD("size callback: %d x %d\n", width, height);
+  glResize(width, height);
+  glStep();
+}
+
 int main() {
   GLFWwindow *window;
+
+  glfwSetErrorCallback(error_callback);
 
   /* Initialize the library */
   if (!glfwInit())
     return -1;
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_SAMPLES, 16);
 
   /* Create a windowed mode window and its OpenGL context */
-  window = glfwCreateWindow(width, height, "OpenGL", nullptr, nullptr);
+  window = glfwCreateWindow(defaultWidth, defaultHeight, "OpenGL", nullptr, nullptr);
   if (!window) {
     glfwTerminate();
     return -1;
   }
+
+  glfwSetKeyCallback(window, key_callback);
+  glfwSetWindowSizeCallback(window, size_callback);
 
   /* Make the window's context current */
   glfwMakeContextCurrent(window);
@@ -129,6 +188,17 @@ int main() {
 
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window)) {
+
+//    int w, h;
+//    glfwGetWindowSize(window, &w, &h);
+//
+//    if ((currentWidth != w) || (currentHeight != h)) {
+//      currentWidth = w;
+//      currentHeight = h;
+//      glResize(w, h);
+//      LOGD("Resizing...\n");
+//    }
+
     /* Render here */
     glStep();
 
@@ -139,6 +209,7 @@ int main() {
     glfwPollEvents();
   }
 
+  glfwDestroyWindow(window);
   glfwTerminate();
-  return 0;
+  exit(EXIT_SUCCESS);
 }

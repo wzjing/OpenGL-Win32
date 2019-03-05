@@ -14,11 +14,11 @@ std::string load_text(const char *file_name) {
         return std::string("");
     }
     const size_t LEN = 1024;
-    char buffer[LEN] = {0};
+    char buffer[LEN+1] = {'\0'};
     while (!file.eof()) {
         file.read(buffer, LEN);
         content.append(buffer);
-        memset(buffer, 0, LEN);
+        memset(buffer, '\0', sizeof(buffer));
     }
     file.close();
     return content;
