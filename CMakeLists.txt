@@ -37,4 +37,6 @@ SET(ENABLE_UNIT_TESTS OFF CACHE BOOL "disable glTF-SDK test")
 SET(ENABLE_SAMPLES OFF CACHE BOOL "disable glTF-SDK samples")
 add_subdirectory(lib/glTF-SDK EXCLUDE_FROM_ALL)
 
-target_link_libraries(OpenGLFoo PRIVATE glfw libglew_static glm GLTFSDK)
+find_package(Threads REQUIRED)
+
+target_link_libraries(OpenGLFoo PRIVATE glfw libglew_static glm GLTFSDK Threads)

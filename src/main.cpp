@@ -8,6 +8,7 @@
 #include <string>
 #include <chrono>
 #include <stdexcept>
+#include <pthread.h>
 #include "utils/asset_loader.h"
 #include "utils/log-utils.h"
 #include "Shader.h"
@@ -36,11 +37,11 @@ GLuint vaoId;
 
 Shader *shader;
 
-std::chrono::time_point<std::chrono::steady_clock> start;
+float start;
 
 float getSeconds() {
   auto now = std::chrono::high_resolution_clock::now();
-  long nanoSec = (now - start).count() / 1000000;
+  long nanoSec = now.time_since_epoch().count() / 1000000;
   float sec = nanoSec / 1000.0f;
   return sec;
 }
@@ -50,13 +51,8 @@ void glResize(int width, int height);
 void glStep();
 
 void glInit() {
-  printf("Render: %s\n"
-         "OpenGL Version: %s\n"
-         "Shader Version: %s\n",
-         glGetString(GL_RENDER),
-         glGetString(GL_VERSION),
-         glGetString(GL_SHADING_LANGUAGE_VERSION));
-  start = std::chrono::high_resolution_clock::now();
+  printGLInfo();
+  start = getSeconds();
   shader = new Shader(load_text("/shader/vertex_shader.glsl"), load_text("/shader/fragment_sea.glsl"));
 
   glResize(defaultWidth, defaultHeight);
@@ -87,20 +83,18 @@ void glInit() {
 }
 
 void glResize(int width, int height) {
-  LOGD("glResize()\n");
   glViewport(0, 0, width, height);
   currentWidth = width;
   currentHeight = height;
 }
 
 void glStep() {
-  LOGD("glStep()\n");
   glClear(GL_COLOR_BUFFER_BIT);
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
 
   // Shader: projectionMatrix;
-  glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)currentWidth / currentHeight, 0.1f,
+  glm::mat4 Projection = glm::perspective(glm::radians(30.0f), (float)currentWidth / currentHeight, 0.1f,
                                           100.0f);
   glm::mat4 View = glm::lookAt(
           glm::vec3(4, 3, 3),
@@ -123,7 +117,7 @@ void glStep() {
   glBindBuffer(GL_ARRAY_BUFFER, vboId);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
 
-  checkGlError("bind buffers");
+  GL_CHECK_ERROR("bind buffers");
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
   glBindVertexArray(0);
@@ -144,7 +138,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
   }
 }
 static void size_callback(GLFWwindow* window, int width, int height) {
-  LOGD("size callback: %d x %d\n", width, height);
   glResize(width, height);
   glStep();
 }
@@ -183,21 +176,11 @@ int main() {
     glfwTerminate();
     return -2;
   }
-
+  GL_CHECK_ERROR("Before Init");
   glInit();
 
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window)) {
-
-//    int w, h;
-//    glfwGetWindowSize(window, &w, &h);
-//
-//    if ((currentWidth != w) || (currentHeight != h)) {
-//      currentWidth = w;
-//      currentHeight = h;
-//      glResize(w, h);
-//      LOGD("Resizing...\n");
-//    }
 
     /* Render here */
     glStep();

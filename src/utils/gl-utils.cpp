@@ -1,27 +1,41 @@
 #include "gl-utils.h"
 
+void printGLInfo() {
+  printf("OpenGL Information ->\n"
+         "\tRenderer       : %s\n"
+         "\tOpenGL Version : %s\n"
+         "\tShader Version : %s\n",
+         glGetString(GL_RENDERER),
+         glGetString(GL_VERSION),
+         glGetString(GL_SHADING_LANGUAGE_VERSION));
+}
 
-void checkGlError(const char* op) {
+void checkGLError(const char *op, const char * filename, int line) {
     for (GLint error = glGetError(); error ; error = glGetError()) {
+        const char * detail;
         switch (error) {
             case GL_INVALID_ENUM:
-                LOG("Operation: %s Error: 0x%x(%s)\n", op, error, "Invalid argument enum");
+                detail =  "Invalid argument enum";
                 break;
             case GL_INVALID_VALUE:
-                LOG("Operation: %s Error: 0x%x(%s)\n", op, error, "Invalid argument value");
+                detail =  "Invalid argument value";
                 break;
             case GL_INVALID_OPERATION:
-                LOG("Operation: %s Error: 0x%x(%s)\n", op, error, "Invalid operation");
+                detail = "Invalid operation";
                 break;
             case GL_OUT_OF_MEMORY:
-                LOG("Operation: %s Error: 0x%x(%s)\n", op, error, "Out Of Memory");
+                detail = "Out Of Memory";
                 break;
             case GL_INVALID_FRAMEBUFFER_OPERATION:
-                LOG("Operation: %s Error: 0x%x(%s)\n", op, error, "Frame Buffer Error");
+                detail = "Frame Buffer Error";
                 break;
             default:
-                LOG("Operation: %s Error: 0x%x(%s)\n", op, error, "Unknown Error");
+                detail = "Unknown Error";
                 break;
         }
+        LOGD("OpenGL Error ->\n"
+             "\tmessage   : %s\n"
+             "\toperation : %s\n"
+             "\tposition  : %s line %d\n", detail, op, filename, line);
     }
 }
