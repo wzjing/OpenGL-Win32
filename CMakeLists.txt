@@ -14,7 +14,7 @@ file(GLOB source_files
         ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.h)
 
-add_executable(OpenGLFoo ${source_files})
+add_executable(OpenGLFoo ${source_files} src/model/Object.cpp src/model/Object.h src/render/Material.cpp src/render/Material.h src/event/EventManager.cpp src/event/EventManager.h)
 
 target_compile_options(OpenGLFoo PRIVATE -Wall)
 
@@ -37,6 +37,14 @@ SET(ENABLE_UNIT_TESTS OFF CACHE BOOL "disable glTF-SDK test")
 SET(ENABLE_SAMPLES OFF CACHE BOOL "disable glTF-SDK samples")
 add_subdirectory(lib/glTF-SDK EXCLUDE_FROM_ALL)
 
-find_package(Threads REQUIRED)
+if (WIN32)
+    add_library(Threads STATIC IMPORTED)
+    set_target_properties(Threads
+            PROPERTIES IMPORTED_LOCATION
+            ${CMAKE_CURRENT_SOURCE_DIR}/lib/pthread/lib/libpthreadGC2.a)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/pthread/include)
+else ()
+    find_package(Threads REQUIRED)
+endif ()
 
 target_link_libraries(OpenGLFoo PRIVATE glfw libglew_static glm GLTFSDK Threads)

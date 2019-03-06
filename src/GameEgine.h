@@ -5,14 +5,30 @@
 #ifndef OPENGL_WIN32_APPLICATION_H
 #define OPENGL_WIN32_APPLICATION_H
 
+#include <GLFW/glfw3.h>
+#include <GL/glew.h>
+#include <GL/eglew.h>
+#include <pthread.h>
+#include "event/EventManager.h"
+
 class GameEngine {
+private:
+  GLFWwindow *window;
+  EventManager* eventManager;
+  const char *name;
+  bool fullScreen;
+  int minWidth;
+  int minHeight;
 public:
-    GameEngine();
-    ~GameEngine();
-    bool init(bool fullScreen, int minWidth, int minHeight);
-    void start();
-    void pause();
-    void destroy();
+  GameEngine(const char *name, bool fullScreen, int minWidth, int minHeight);
+
+  ~GameEngine();
+
+  void start();
+
+  void pause();
+
+  void destroy();
 };
 
 
