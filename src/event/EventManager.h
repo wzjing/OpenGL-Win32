@@ -5,10 +5,10 @@
 #ifndef OPENGLFOO_EVENTMANAGER_H
 #define OPENGLFOO_EVENTMANAGER_H
 
-
 class EventManager {
 public:
   virtual bool onKey(int keyCode, int action) = 0;
+
   virtual bool onCursor(int x, int y) = 0;
 };
 

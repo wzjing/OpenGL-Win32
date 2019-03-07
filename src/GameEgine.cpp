@@ -13,6 +13,10 @@ void glResize(int width, int height);
 
 void glStep();
 
+void event_callback(GLFWwindow *window, int key, int scanCode, int action, int mods) {
+  GameEngine::eventManager->onKey(key, action);
+}
+
 GameEngine::GameEngine(const char *name, bool fullScreen, int minWidth, int minHeight) :
         name(name),
         fullScreen(fullScreen), minWidth(minWidth), minHeight(minHeight) {
@@ -40,9 +44,9 @@ GameEngine::~GameEngine() {
     throw std::runtime_error("unable to init glew");
   }
 
-  glfwSetKeyCallback(window, [](GLFWwindow *window, int key, int scanCode, int action, int mods) -> void {
-    eventManager->onKey(key, action);
-  });
+  eventManager = new EventManagerIMPL();
+
+  glfwSetKeyCallback(window, event_callback);
 
   glInit();
 

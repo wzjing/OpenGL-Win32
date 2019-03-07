@@ -14,7 +14,7 @@ file(GLOB source_files
         ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.h)
 
-add_executable(OpenGLFoo ${source_files} src/model/Object.cpp src/model/Object.h src/render/Material.cpp src/render/Material.h src/event/EventManager.cpp src/event/EventManager.h)
+add_executable(OpenGLFoo ${source_files})
 
 target_compile_options(OpenGLFoo PRIVATE -Wall)
 
