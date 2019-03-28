@@ -6,7 +6,7 @@
 
 #include <cstring>
 #include "Shader.h"
-#include "../utils/gl-utils.h"
+#include "../../utils/gl-utils.h"
 
 Shader::Shader(std::string vertexShader, std::string fragmentShader, std::string geometryShader) :
         vertexShaderSrc(std::move(vertexShader)),

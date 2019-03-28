@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include "utils/asset_loader.h"
 #include "utils/log-utils.h"
-#include "render/Shader.h"
+#include "model/component/Shader.h"
 #include "utils/gl-utils.h"
 
 const int defaultWidth = 640;

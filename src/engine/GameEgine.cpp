@@ -4,8 +4,8 @@
 
 #include <stdexcept>
 #include "GameEgine.h"
-#include "utils/gl-utils.h"
-#include "utils/log-utils.h"
+#include "../utils/gl-utils.h"
+#include "../utils/log-utils.h"
 
 void glInit();
 

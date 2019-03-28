@@ -9,7 +9,7 @@
 #include <GL/glew.h>
 #include <GL/eglew.h>
 #include <pthread.h>
-#include "event/EventSystem.h"
+#include "../event/EventSystem.h"
 
 class GameEngine {
 private:
