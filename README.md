@@ -1,3 +1,9 @@
-# OpenGL-Win32
+# OpenGL-Cross-Platform
 
-> This is an OpenGL demo for win32 platform.
+> This is an OpenGL demo for Win32, Linux and MacOs.
+
+## Required
+
+* Git
+* PowerShell
+* cmake

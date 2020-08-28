@@ -1,35 +1,65 @@
 //#define GLEW_STATIC
 
-#include <iostream>
+#include "model/component/Shader.h"
+#include "utils/asset_loader.h"
+#include "utils/gl-utils.h"
+#include "utils/log-utils.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#include <string>
 #include <chrono>
-#include <stdexcept>
+#include <glm/ext.hpp>
+#include <glm/glm.hpp>
+#include <iostream>
 #include <pthread.h>
-#include "utils/asset_loader.h"
-#include "utils/log-utils.h"
-#include "model/component/Shader.h"
-#include "utils/gl-utils.h"
+#include <stdexcept>
+#include <string>
 
 const int defaultWidth = 640;
 const int defaultHeight = 480;
 
 int currentWidth = 0;
 int currentHeight = 0;
+float verticalRotation = 0.0f;
+float horizontalRotation = 90.0f;
+int radius = 5;
+int step = 3;
 
 float vertices[] = {
-        -1, -1,
-        1, -1,
-        1, 1,
-        -1, 1
+    -1, -1, 1, -1, 1, 1, -1, 1,
+
 };
-GLuint indices[] = {
-        0, 1, 2,
-        2, 3, 0
-};
+GLuint indices[] = {0, 1, 2, 2, 3, 0};
+
+float cubeVertices[] = {
+    -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.5f,  -0.5f, -0.5f,
+    0.0f,  0.0f,  -1.0f, 0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f,
+    0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, -0.5f, 0.5f,  -0.5f,
+    0.0f,  0.0f,  -1.0f, -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f,
+
+    -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.5f,  -0.5f, 0.5f,
+    0.0f,  0.0f,  1.0f,  0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  -0.5f, 0.5f,  0.5f,
+    0.0f,  0.0f,  1.0f,  -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,
+
+    -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  -0.5f, 0.5f,  -0.5f,
+    -1.0f, 0.0f,  0.0f,  -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,  -0.5f, -0.5f, 0.5f,
+    -1.0f, 0.0f,  0.0f,  -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,
+
+    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.5f,  0.5f,  -0.5f,
+    1.0f,  0.0f,  0.0f,  0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,
+    0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,  0.5f,  -0.5f, 0.5f,
+    1.0f,  0.0f,  0.0f,  0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+    -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.5f,  -0.5f, -0.5f,
+    0.0f,  -1.0f, 0.0f,  0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,
+    0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  -0.5f, -0.5f, 0.5f,
+    0.0f,  -1.0f, 0.0f,  -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,
+
+    -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.5f,  0.5f,  -0.5f,
+    0.0f,  1.0f,  0.0f,  0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  -0.5f, 0.5f,  0.5f,
+    0.0f,  1.0f,  0.0f,  -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f};
 
 GLuint vboId;
 GLuint eboId;
@@ -45,30 +75,46 @@ float getSeconds() {
   float sec = nanoSec / 1000.0f;
   return sec;
 }
-
+#define PI 3.14159265f
 void glInit();
 void glResize(int width, int height);
 void glStep();
+void rotate(glm::vec2 rotation);
+
+float getX() {
+  return cos(horizontalRotation/180 * PI) * radius;
+}
+
+float getY() {
+  return sin(verticalRotation/180 * PI) * radius;
+}
+
+float getZ() {
+  return sin(horizontalRotation/180 * PI) * radius + cos(verticalRotation/180 * PI) * radius;
+}
 
 void glInit() {
   printGLInfo();
   start = getSeconds();
-  shader = new Shader(load_text("/shader/vertex_shader.glsl"), load_text("/shader/fragment_sea.glsl"));
+  shader = new Shader(load_text("/shader/vertex_shader.glsl"),
+                      load_text("/shader/fragment_color.glsl"));
 
   glResize(defaultWidth, defaultHeight);
   glEnable(GL_MULTISAMPLE);
-
+  glEnable(GL_DEPTH);
 
   // VBO: Vertex Buffer Object
   glGenBuffers(1, &vboId);
   glBindBuffer(GL_ARRAY_BUFFER, vboId);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
+               GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  //EBO: Element Buffer Object
+  // EBO: Element Buffer Object
   glGenBuffers(1, &eboId);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
   // VAO: Vertex Array Object
@@ -76,10 +122,9 @@ void glInit() {
   glBindVertexArray(vaoId);
   glBindBuffer(GL_ARRAY_BUFFER, vaoId);
   shader->setAttribute("vertexPosition", 2, 2 * sizeof(float));
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
 
   glBindVertexArray(0);
-
 }
 
 void glResize(int width, int height) {
@@ -92,25 +137,27 @@ void glStep() {
   glClear(GL_COLOR_BUFFER_BIT);
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
-
   // Shader: projectionMatrix;
-  glm::mat4 Projection = glm::perspective(glm::radians(30.0f), (float)currentWidth / currentHeight, 0.1f,
-                                          100.0f);
-  glm::mat4 View = glm::lookAt(
-          glm::vec3(4, 3, 3),
-          glm::vec3(0, 0, 0),
-          glm::vec3(0, 1, 0)
-  );
+  glm::mat4 Projection = glm::perspective(
+      glm::radians(30.0f), (float)currentWidth / currentHeight, 0.1f, 100.0f);
+//  auto m_position = glm::vec3(getX(), getY(), getZ());
+//  auto m_direction = glm::vec3(0, 0, 0);
+  auto m_position = glm::vec3(getX(), getY(), getZ());
+  auto m_direction = glm::vec3(0, 0, 0);
+  glm::mat4 View =
+      glm::lookAt(m_position, m_direction, glm::vec3(0, 1, 0));
   glm::mat4 Model = glm::mat4(1.0f);
 
-//  float degree = 360 * sin((float) clock() / (10 * CLOCKS_PER_SEC));
-//  glm::mat4 rotatedView = glm::rotate(View, degree, glm::vec3(0, 1, 0));
+  //  float degree = 360 * sin((float) clock() / (10 * CLOCKS_PER_SEC));
+  //  glm::mat4 rotatedView = glm::rotate(View, degree, glm::vec3(0, 1, 0));
 
   glm::mat4 mvp = Projection * View * Model;
 
   shader->use();
   shader->setUniform("iGlobalTime", getSeconds());
-  shader->setUniform("iResolution", 2, std::array<float, 2>{(float) currentWidth, (float) currentHeight}.data());
+  shader->setUniform(
+      "iResolution", 2,
+      std::array<float, 2>{(float)currentWidth, (float)currentHeight}.data());
   shader->setUniform("mvp", 4, 4, &mvp[0][0]);
 
   glBindVertexArray(vaoId);
@@ -119,25 +166,47 @@ void glStep() {
 
   GL_CHECK_ERROR("bind buffers");
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+  GL_CHECK_ERROR("draw element");
 
   glBindVertexArray(0);
 
-//  shader->unUse();
+  //  shader->unUse();
 }
 
-static void error_callback(int error, const char* description)
-{
+static void error_callback(int error, const char *description) {
   fprintf(stderr, "Error: (%d)%s\n", error, description);
 }
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
+static void key_callback(GLFWwindow *window, int key, int scancode, int action,
+                         int mods) {
+  LOGD("Key: %d, %d\n", key, action);
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GLFW_TRUE);
-  else{
-    LOGD("Key: %d\n", key);
+
+  if (action == GLFW_REPEAT || action == GLFW_PRESS) {
+    switch (key) {
+    case GLFW_KEY_LEFT:
+      rotate(glm::vec2(0 - step, 0));
+      break;
+    case GLFW_KEY_RIGHT:
+      rotate(glm::vec2(step, 0));
+      break;
+    case GLFW_KEY_DOWN:
+      rotate(glm::vec2(0, step));
+      break;
+    case GLFW_KEY_UP:
+      rotate(glm::vec2(0, 0 - step));
+      break;
+    default:
+      break;
+    }
+  }
+
+  if (action == GLFW_PRESS && key == GLFW_KEY_SPACE) {
+    horizontalRotation = 90;
+    verticalRotation = 0;
   }
 }
-static void size_callback(GLFWwindow* window, int width, int height) {
+static void size_callback(GLFWwindow *window, int width, int height) {
   glResize(width, height);
   glStep();
 }
@@ -158,7 +227,8 @@ int main() {
   glfwWindowHint(GLFW_SAMPLES, 16);
 
   /* Create a windowed mode window and its OpenGL context */
-  window = glfwCreateWindow(defaultWidth, defaultHeight, "OpenGL", nullptr, nullptr);
+  window =
+      glfwCreateWindow(defaultWidth, defaultHeight, "OpenGL", nullptr, nullptr);
   if (!window) {
     glfwTerminate();
     return -1;
@@ -195,4 +265,11 @@ int main() {
   glfwDestroyWindow(window);
   glfwTerminate();
   exit(EXIT_SUCCESS);
+}
+
+// rotation like star trek
+void rotate(glm::vec2 rotation) {
+  horizontalRotation += rotation.x;
+  verticalRotation += rotation.y;
+  LOGD("rotate : [%f˚, %f˚] -> (%f, %f, %f)\n", verticalRotation, horizontalRotation, getX(), getY(), getZ());
 }

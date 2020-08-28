@@ -12,7 +12,9 @@ file(GLOB source_files
         ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.h)
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/**/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/**/*.h)
 
 add_executable(OpenGLFoo ${source_files})
 
@@ -44,7 +46,7 @@ if (WIN32)
             ${CMAKE_CURRENT_SOURCE_DIR}/lib/pthread/lib/libpthreadGC2.a)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/pthread/include)
 else ()
-    find_package(Threads REQUIRED)
+    set(Threads "pthread")
 endif ()
 
-target_link_libraries(OpenGLFoo PRIVATE glfw libglew_static glm GLTFSDK Threads)
+target_link_libraries(OpenGLFoo PRIVATE glfw libglew_static glm GLTFSDK ${Threads})
