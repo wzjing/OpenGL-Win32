@@ -1,4 +1,4 @@
-#include "gl-utils.h"
+#include "util/gl-utils.h"
 
 void printGLInfo() {
   printf("OpenGL Information ->\n"

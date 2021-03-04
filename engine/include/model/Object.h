@@ -5,8 +5,8 @@
 #ifndef OPENGLFOO_OBJECT_H
 #define OPENGLFOO_OBJECT_H
 
-#include "component/RigidBody.h"
 #include "component/Material.h"
+#include "component/RigidBody.h"
 #include "component/Transform.h"
 
 class Object {

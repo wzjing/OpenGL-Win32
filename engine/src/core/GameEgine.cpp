@@ -2,10 +2,10 @@
 // Created by wzjing on 2019/2/20.
 //
 
+#include "engine/GameEgine.h"
+#include "util/gl-utils.h"
+#include "log/log-utils.h"
 #include <stdexcept>
-#include "GameEgine.h"
-#include "../utils/gl-utils.h"
-#include "../utils/log-utils.h"
 
 void glInit();
 

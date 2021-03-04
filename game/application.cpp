@@ -1,9 +1,9 @@
 //#define GLEW_STATIC
 
-#include "model/component/Shader.h"
-#include "utils/asset_loader.h"
-#include "utils/gl-utils.h"
-#include "utils/log-utils.h"
+#include <model/component/Shader.h>
+#include <log/log-utils.h>
+#include <util/asset_loader.h>
+#include <util/gl-utils.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <chrono>
@@ -69,7 +69,7 @@ Shader *shader;
 
 float start;
 
-float getSeconds() {
+float getMilliSecs() {
   auto now = std::chrono::high_resolution_clock::now();
   long nanoSec = now.time_since_epoch().count() / 1000000;
   float sec = nanoSec / 1000.0f;
@@ -81,21 +81,20 @@ void glResize(int width, int height);
 void glStep();
 void rotate(glm::vec2 rotation);
 
-float getX() {
-  return cos(horizontalRotation/180 * PI) * radius;
-}
+float getX() { return cos(horizontalRotation / 180 * PI) * radius; }
 
 float getY() {
-  return sin(verticalRotation/180 * PI) * radius;
+  return sqrt(radius - cos(verticalRotation / 180 * PI) * radius);
 }
 
 float getZ() {
-  return sin(horizontalRotation/180 * PI) * radius + cos(verticalRotation/180 * PI) * radius;
+  return sqrt(cos(verticalRotation / 180 * PI) * radius -
+              pow(cos(horizontalRotation / 180 * PI) * radius, 2));
 }
 
 void glInit() {
   printGLInfo();
-  start = getSeconds();
+  start = getMilliSecs();
   shader = new Shader(load_text("/shader/vertex_shader.glsl"),
                       load_text("/shader/fragment_color.glsl"));
 
@@ -106,8 +105,7 @@ void glInit() {
   // VBO: Vertex Buffer Object
   glGenBuffers(1, &vboId);
   glBindBuffer(GL_ARRAY_BUFFER, vboId);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
-               GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   // EBO: Element Buffer Object
@@ -122,7 +120,7 @@ void glInit() {
   glBindVertexArray(vaoId);
   glBindBuffer(GL_ARRAY_BUFFER, vaoId);
   shader->setAttribute("vertexPosition", 2, 2 * sizeof(float));
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
 
   glBindVertexArray(0);
 }
@@ -140,12 +138,12 @@ void glStep() {
   // Shader: projectionMatrix;
   glm::mat4 Projection = glm::perspective(
       glm::radians(30.0f), (float)currentWidth / currentHeight, 0.1f, 100.0f);
-//  auto m_position = glm::vec3(getX(), getY(), getZ());
-//  auto m_direction = glm::vec3(0, 0, 0);
-  auto m_position = glm::vec3(getX(), getY(), getZ());
-  auto m_direction = glm::vec3(0, 0, 0);
-  glm::mat4 View =
-      glm::lookAt(m_position, m_direction, glm::vec3(0, 1, 0));
+  //  auto m_position = glm::vec3(getX(), getY(), getZ());
+  //  auto m_direction = glm::vec3(0, 0, 0);
+  auto camera_pos = glm::vec3(getX(), getY(), getZ());
+  auto object_pos = glm::vec3(0, 0, 3);
+  auto world_up = glm::vec3(0, 1, 0);
+  glm::mat4 View = glm::lookAt(camera_pos + object_pos, object_pos, world_up);
   glm::mat4 Model = glm::mat4(1.0f);
 
   //  float degree = 360 * sin((float) clock() / (10 * CLOCKS_PER_SEC));
@@ -154,7 +152,7 @@ void glStep() {
   glm::mat4 mvp = Projection * View * Model;
 
   shader->use();
-  shader->setUniform("iGlobalTime", getSeconds());
+  shader->setUniform("iGlobalTime", getMilliSecs());
   shader->setUniform(
       "iResolution", 2,
       std::array<float, 2>{(float)currentWidth, (float)currentHeight}.data());
@@ -271,5 +269,7 @@ int main() {
 void rotate(glm::vec2 rotation) {
   horizontalRotation += rotation.x;
   verticalRotation += rotation.y;
-  LOGD("rotate : [%f˚, %f˚] -> (%f, %f, %f)\n", verticalRotation, horizontalRotation, getX(), getY(), getZ());
+  LOGD("rotate : [%f˚, %f˚] -> (%f, %f, %f), distance = %f\n", verticalRotation,
+       horizontalRotation, getX(), getY(), getZ(),
+       sqrt(pow(getX(), 2) + pow(getY(), 2) + pow(getZ(), 2)));
 }

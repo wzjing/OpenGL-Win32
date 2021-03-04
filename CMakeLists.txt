@@ -8,17 +8,17 @@ add_definitions(-DDEBUG
         -DGLEW_STATIC
         -DPROJECT_DIR=\"${CMAKE_SOURCE_DIR}\")
 
-file(GLOB source_files
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/**/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/**/*.h)
+#file(GLOB source_files
+#        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+#        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
+#        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp
+#        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.h
+#        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/**/*.cpp
+#        ${CMAKE_CURRENT_SOURCE_DIR}/src/**/**/*.h)
 
-add_executable(OpenGLFoo ${source_files})
+#add_executable(OpenGLFoo ${source_files})
 
-target_compile_options(OpenGLFoo PRIVATE -Wall)
+#target_compile_options(OpenGLFoo PRIVATE -Wall)
 
 # glfw
 SET(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "disable glfw examples")
@@ -39,6 +39,11 @@ SET(ENABLE_UNIT_TESTS OFF CACHE BOOL "disable glTF-SDK test")
 SET(ENABLE_SAMPLES OFF CACHE BOOL "disable glTF-SDK samples")
 add_subdirectory(lib/glTF-SDK EXCLUDE_FROM_ALL)
 
+# OpenGL Engine
+add_subdirectory(engine)
+
+add_subdirectory(game)
+
 if (WIN32)
     add_library(Threads STATIC IMPORTED)
     set_target_properties(Threads
@@ -49,4 +54,4 @@ else ()
     set(Threads "pthread")
 endif ()
 
-target_link_libraries(OpenGLFoo PRIVATE glfw libglew_static glm GLTFSDK ${Threads})
+#target_link_libraries(OpenGLFoo PRIVATE glfw libglew_static glm GLTFSDK ${Threads})

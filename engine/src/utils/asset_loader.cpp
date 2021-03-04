@@ -1,8 +1,8 @@
-#include "asset_loader.h"
-#include <fstream>
+#include "util/asset_loader.h"
+#include "util/assets.h"
+#include "log/log-utils.h"
 #include <cstring>
-#include "log-utils.h"
-#include "assets.h"
+#include <fstream>
 
 std::string load_text(const char *file_name) {
     std::string content;

@@ -4,9 +4,9 @@
 
 #include <utility>
 
+#include "model/component/Shader.h"
+#include "util/gl-utils.h"
 #include <cstring>
-#include "Shader.h"
-#include "../../utils/gl-utils.h"
 
 Shader::Shader(std::string vertexShader, std::string fragmentShader, std::string geometryShader) :
         vertexShaderSrc(std::move(vertexShader)),
